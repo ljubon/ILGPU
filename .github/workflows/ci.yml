@@ -155,13 +155,13 @@ jobs:
         shell: bash
         run: echo ::set-output name=flavor::$([[ "${{ matrix.os }}" == "cuda" ]] && echo "Cuda" || echo "CPU")
 
-      - name: Set parallelization level
+      - name: Set values
         id: values
         shell: bash
         run: 
           if [[ ${{ github.event_name == 'schedule' || (github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))) }} ]]; then
-            jsonValues='{"ILGPU_CLEAN_TESTS":"1", "ILGPU_TEST_PARALLELIZATION_LEVEL":"true"}'
-            echo ::set-output name=json::toJson($jsonValues)
+            jsonValues="{"ILGPU_CLEAN_TESTS":"1", "ILGPU_TEST_PARALLELIZATION_LEVEL":"true"}"
+            echo ::set-output name=json::$jsonValues
           fi
 
       - name: Build and test
