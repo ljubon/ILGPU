@@ -155,11 +155,21 @@ jobs:
         shell: bash
         run: echo ::set-output name=flavor::$([[ "${{ matrix.os }}" == "cuda" ]] && echo "Cuda" || echo "CPU")
 
+      - name: Set parallelization level
+        id: test-parallel
+        shell: bash
+        run: 
+          if [[ ${{ github.event_name == 'schedule' || (github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))) }} ]]; then
+            echo ::set-output name=testParallel::1
+          else
+            echo ::set-output name=testParallel::4
+          fi
+
       - name: Build and test
         run: dotnet test --configuration=Release --framework=${{ matrix.framework }} -p:TreatWarningsAsErrors=true --logger GitHubActions Src/${{ matrix.library }}.Tests.${{ steps.test-flavor.outputs.flavor }}
         env:
           ILGPU_CLEAN_TESTS: ${{ github.event_name == 'schedule' || (github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))) }}
-          ILGPU_TEST_PARALLELIZATION_LEVEL: ${{ github.event_name == 'schedule' || (github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))) }}
+          ILGPU_TEST_PARALLELIZATION_LEVEL: ${{ steps.test-parallel.outputs.testParallel }}
 
   # Create the NuGet packages, with fixes for portable symbols.
   package:
