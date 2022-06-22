@@ -180,6 +180,15 @@ jobs:
         env:
           ILGPU_CLEAN_TESTS: ${{ github.event_name == 'schedule' || (github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))) }}
 
+      - name: Scan
+        if: matrix.os == 'ubuntu-latest'
+        continue-on-error: false
+        uses: tidelift/alignment-action@main
+        env:
+          TIDELIFT_API_KEY: ${{ secrets.TIDELIFT_API_KEY }}
+          TIDELIFT_ORGANIZATION: ${{ secrets.TIDELIFT_ORGANIZATION }}
+          TIDELIFT_PROJECT: ${{ secrets.TIDELIFT_PROJECT }}
+
   # Ensure that ILGPU libraries are built using the same version tag.
   check-version:
     # Do not run this job for pull requests where both branches are from the same repo.
